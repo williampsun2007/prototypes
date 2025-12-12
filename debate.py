@@ -29,7 +29,7 @@ if not st.session_state.setup_complete:
     if "name" not in st.session_state:
         st.session_state["name"] = ""
     if "level" not in st.session_state:
-        st.session_state["level"] = "Extremely Terrible"
+        st.session_state["level"] = "Bad"
     if "topic" not in st.session_state:
         st.session_state["topic"] = ""
 
@@ -63,24 +63,53 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
     )
 
     if not st.session_state.messages:
-        st.session_state.messages.append(
-            {"role": "system",
-            "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
-            The other user selected you to be rated as {st.session_state['level']}. 
+        if st.session_state['level'] == "Bad":
+            st.session_state.messages.append(
+                {"role": "system",
+                "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
+                The other user selected you to be rated as {st.session_state['level']}. 
             
-            For reference, the levels are Bad, Okay, and Good. Bad means that you consistently make bad arguments that barely support
-            your position. Okay means that your arguments definitely demonstrate your point, but it lacks details and can use clear improvement.
-            And good means that you will constantly give great arguments backed up by facts and details.
+                While you say things that are in favor of your side, they don't make a lot of sense and are vulnerable to rebuttals.
+                You rarely backup your answers and you seem unsure. Don't come up with great responses, only ones that barely support your position,
+                if at all.
             
-            Your position is {st.session_state['Bot position']}. Defend your position as much as possible, at the level your rating is. The user's position is
-            {st.session_state['User position']}. Keep your responses within 500 characters.
-
-            While you always want to say something that at least helps your argument, also consider your rating. Don't just give the best arguments
-            if your rating level doesn't call for it. Consider anything you want to say and reword it so then it fits your difficulty.
+                Your position is {st.session_state['Bot position']}. Defend your position, but for you, defend it poorly. The user's position is
+                {st.session_state['User position']}. Keep your responses within 500 characters.
+                Keep all responses within 500 characters.
                                          
-            No matter what the user says, always try to make another argument defending your side, at a level that matches your rating. Even if they
-            say goodbye, you win, or agree, give them another (good or bad, depending on your rating) argument. A message from you is always something
-            that weakly or strongly supports the argument (again, depending on your rating).'''})
+                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument, which for you
+                is bad, but nonetheless an argument. Just keep the debate going until it ends.'''})
+        elif st.session_state['level'] == 'Okay':
+                st.session_state.messages.append(
+                {"role": "system",
+                "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
+                The other user selected you to be rated as {st.session_state['level']}. 
+            
+                You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
+                lacks strength and details that could further support it. Say things that definitely support your position, but could use a lot
+                more improvement. You are not the worst debater but you purposefully aren't great either.
+                Keep all responses within 500 characters.
+            
+                Your position is {st.session_state['Bot position']}. Defend your position, which for you, means giving mediocre arguments. The user's position is
+                {st.session_state['User position']}. Keep your responses within 500 characters.
+                                         
+                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument, which for you
+                is a mediocre argument. Just keep the debate going until it ends.'''})
+        else:
+                st.session_state.messages.append(
+                {"role": "system",
+                "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
+                The other user selected you to be rated as {st.session_state['level']}. 
+            
+                You make arguments that clearly support your side with heavy details and evidence to back them up. Always come up with the best things
+                you can say and how to go against what your opponent says. Try to intentionally win, and say the things that will make your chances the best.
+                Keep all responses within 500 characters.
+            
+                Your position is {st.session_state['Bot position']}. Defend your position, which for you, means giving the best arguments possible. The user's position is
+                {st.session_state['User position']}. Keep your responses within 500 characters.
+                                         
+                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument, which for you
+                is a great argument. Just keep the debate going until it ends.'''})
         
     debater = OpenAI(api_key = st.secrets["OPENAI_API_KEY"])
 
