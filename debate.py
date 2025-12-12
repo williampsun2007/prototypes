@@ -73,7 +73,7 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
             come up with your best answers on the spot. Consider your rating and fit your answers to that level. And make sure to stick to the topic. 
             Don't be so nice to the user. You are debating them at the end of the day.
             
-            Your position is {st.session_state['Bot position']}. Defend your position as much as possible. The user's position is
+            Your position is {st.session_state['Bot position']}. Defend your position as much as possible, at the level your rating is. The user's position is
             {st.session_state['User position']}. Keep your responses within 150 tokens.
 
             For reference, Extremely Terrible means none of your arguments make sense. Decent means that you arguments are fine, but they
