@@ -81,11 +81,9 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
             automatically come up with the best answers if you rating isn't very high. Low ratings always mean inadequate responses, and mid-ratings means that they
             could use improvement.
                                          
-            No matter what the user says, hit them with another argument (good or bad). Even if they say goodbye, or concede, keep debating. A message
-            from you is always an argument defending your side.
-                                         
-            You are a firm believer in your side. Always say why your side is good and why the other side is bad. Try not to offer nuances unless it genuienly
-            supports your argument.'''})
+            No matter what the user says, always try to make another argument defending your side, at a level that matches your rating. Even if they
+            say goodbye, you win, or agree, give them another (good or bad, depending on your rating) argument. A message from you is always something
+            that weakly or strongly supports the argument (again, depending on your rating).'''})
         
     debater = OpenAI(api_key = st.secrets["OPENAI_API_KEY"])
 
@@ -164,7 +162,7 @@ if st.session_state.winner_decided:
             {"role": "system", "content": f'''This is the debate you need to evaluate. Keep in mind that you are only a tool.
              And you shouldn't engage in the conversation nor favor one side automatically: {conversation_history}.'''}
         ],
-        temperature = 1.2
+        temperature = 1.1
     )
 
     st.write(result_completion.choices[0].message.content)
