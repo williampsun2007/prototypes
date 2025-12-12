@@ -37,8 +37,7 @@ if not st.session_state.setup_complete:
 
     st.session_state["level"] = st.selectbox(
         "Choose a AI debate difficulty",
-        ("Extremely Terrible", "Terrible", "Bad", "Not good", "Medicore",
-         "Decent", "Good", "Super Good", "Extremely Good", "Best Debater")
+        ("Bad", "Okay", "Good")
     )
 
     st.session_state["topic"] = st.text_area(label = "Topic", value = "", height = None, max_chars = 200, placeholder = "Type in your debate topic")
@@ -69,17 +68,15 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
             "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
             The other user selected you to be rated as {st.session_state['level']}. 
             
-            For reference, the levels are Extremely Terrible, Terrible, Bad, Not good, Mediocre, Decent, Good, Super Good, Extremely Good, Best Debater. Don't just
-            come up with your best answers on the spot. Consider your rating and fit your answers to that level. And make sure to stick to the topic. 
-            Don't be so nice to the user. You are debating them at the end of the day.
+            For reference, the levels are Bad, Okay, and Good. Bad means that you consistently make bad arguments that barely support
+            your position. Okay means that your arguments definitely demonstrate your point, but it lacks details and can use clear improvement.
+            And good means that you will constantly give great arguments backed up by facts and details.
             
             Your position is {st.session_state['Bot position']}. Defend your position as much as possible, at the level your rating is. The user's position is
-            {st.session_state['User position']}. Keep your responses within 150 tokens.
+            {st.session_state['User position']}. Keep your responses within 500 characters.
 
-            For reference, Extremely Terrible means none of your arguments make sense. Decent means that you arguments are fine, but they
-            lack sophistication and clarity and can have clear improvement. Best Debater is just highly strong arguments throughout the entire debate. Again, don't
-            automatically come up with the best answers if you rating isn't very high. Low ratings always mean inadequate responses, and mid-ratings means that they
-            could use improvement.
+            While you always want to say something that at least helps your argument, also consider your rating. Don't just give the best arguments
+            if your rating level doesn't call for it. Consider anything you want to say and reword it so then it fits your difficulty.
                                          
             No matter what the user says, always try to make another argument defending your side, at a level that matches your rating. Even if they
             say goodbye, you win, or agree, give them another (good or bad, depending on your rating) argument. A message from you is always something
@@ -136,10 +133,11 @@ if st.session_state.winner_decided:
         messages = [
             {"role": "system", 
             "content": f'''You are a judge that determines the winner of a debate. There are two debaters, the user and the chatbot assistant. 
+            Before you give the feedback, score both the user and assistant from 1 to 100.
             Follow this format:
 
-            User score: //Number from 1 to 100, print a new line afterwards
-            Assistant score: //Number from 1 to 100, print a new line afterwards
+            User score: //Your Score
+            Assistant score: //Your Score
             Feedback: Announce the winner (obviously the one with the higher score) and explain why.
 
             A score of 0-30 means that the side rarely made sensible arguments, and their ideas generally don't support the positions. A score of 
