@@ -63,53 +63,29 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
     )
 
     if not st.session_state.messages:
-        if st.session_state['level'] == "Bad":
-            st.session_state.messages.append(
-                {"role": "system",
-                "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
-                The other user selected you to be rated as {st.session_state['level']}. 
-            
-                While you say things that are in favor of your side, they don't make a lot of sense and are vulnerable to rebuttals.
+        behavior_map = {
+            'Bad': '''While you say things that are in favor of your side, they don't make a lot of sense and are vulnerable to rebuttals.
                 You rarely backup your answers and you seem unsure. Don't come up with great responses, only ones that barely support your position,
-                if at all.
-            
-                Your position is {st.session_state['Bot position']}. Defend your position, but for you, defend it poorly. The user's position is
-                {st.session_state['User position']}. Keep your responses within 500 characters.
-                Keep all responses within 500 characters.
-                                         
-                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument, which for you
-                is bad, but nonetheless an argument. Just keep the debate going until it ends.'''})
-        elif st.session_state['level'] == 'Okay':
-                st.session_state.messages.append(
-                {"role": "system",
-                "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
-                The other user selected you to be rated as {st.session_state['level']}. 
-            
-                You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
+                if at all.''',
+            'Okay': '''You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
                 lacks strength and details that could further support it. Say things that definitely support your position, but could use a lot
-                more improvement. You are not the worst debater but you purposefully aren't great either.
-                Keep all responses within 500 characters.
-            
-                Your position is {st.session_state['Bot position']}. Defend your position, which for you, means giving mediocre arguments. The user's position is
-                {st.session_state['User position']}. Keep your responses within 500 characters.
-                                         
-                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument, which for you
-                is a mediocre argument. Just keep the debate going until it ends.'''})
-        else:
-                st.session_state.messages.append(
+                more improvement. You are not the worst debater but you purposefully aren't great either.''',
+            'Good': '''You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
+                lacks strength and details that could further support it. Say things that definitely support your position, but could use a lot
+                more improvement. You are not the worst debater but you purposefully aren't great either.'''
+        }
+
+        st.session_state.messages.append(
                 {"role": "system",
                 "content": f'''You are a debater that will debate another person called {st.session_state['name']}. The chosen topic is on {st.session_state['topic']}. 
-                The other user selected you to be rated as {st.session_state['level']}. 
+                The other user selected you to be rated as {st.session_state['level']}. {behavior_map[st.session_state['level']]}
             
-                You make arguments that clearly support your side with heavy details and evidence to back them up. Always come up with the best things
-                you can say and how to go against what your opponent says. Try to intentionally win, and say the things that will make your chances the best.
-                Keep all responses within 500 characters.
-            
-                Your position is {st.session_state['Bot position']}. Defend your position, which for you, means giving the best arguments possible. The user's position is
-                {st.session_state['User position']}. Keep your responses within 500 characters.
+                Your position is {st.session_state['Bot position']}. Defend your position, but at the level '{st.session_state['level']}'.
+                For reference, the possible levels are 'Bad', 'Okay', and 'Good'. The user's position is {st.session_state['User position']}. Keep your responses within 500 characters.
                                          
-                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument, which for you
-                is a great argument. Just keep the debate going until it ends.'''})
+                No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument (at the level {st.session_state['level']}.
+                Just keep the debate going until it ends. Never send anything that agrees with the user, supports the other position, or anything that undermines
+                your position in the debate. (Again, keep your arguments at the right level.)'''})
         
     debater = OpenAI(api_key = st.secrets["OPENAI_API_KEY"])
 
@@ -153,39 +129,42 @@ if st.session_state.debate_complete and not st.session_state.winner_decided:
 if st.session_state.winner_decided:
     st.subheader("Results")
 
-    conversation_history = "\n".join(f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages)
-
+    conversation_history = "\n".join(
+    f"[User - {st.session_state['name']}]" if msg['role']=='user' else "[Assistant]" + f": {msg['content']}"
+    for msg in st.session_state.messages
+)
     judge = OpenAI(api_key = st.secrets["OPENAI_API_KEY"])
 
     result_completion = judge.chat.completions.create(
         model = "gpt-4o",
         messages = [
             {"role": "system", 
-            "content": f'''You are a judge that determines the winner of a debate. There are two debaters, the user and the chatbot assistant. 
-            Before you give the feedback, score both the user and assistant from 1 to 100.
-            Follow this format:
+            "content": f'''You are a judge that determines the winner of a debate. In the following conversation, messages labeled 
+            [User - {st.session_state['name']}] are from the human debater, and messages labeled [Assistant] are from the chatbot debater. 
+            Do not assume any other mapping. Before you give the feedback, score both [User - {st.session_state['name']}] and [Assistant] from 1 to 100.
 
-            User score: //Your Score
-            Assistant score: //Your Score
+            Follow this format, printing a new line for each score and the feedback:
+
+            [User - {st.session_state['name']}] score: //Your Score
+            [Assistant] score: //Your Score
             Feedback: Announce the winner (obviously the one with the higher score) and explain why.
 
             A score of 0-30 means that the side rarely made sensible arguments, and their ideas generally don't support the positions. A score of 
             30-70 means that the arguments are somewhat decent in supporting the position, but could improve from refinement or factual evidence. A score
-            of 80-100 is really good, constant support of arguments that support the position and expresses them in clear ways.
+            of 80-100 is really good, CONSTANT support of arguments that support the position and expresses them in clear ways.
 
-            Try not to be generic. Don't just say that someone is more detailed or gave more complex answers. Really go into key points each side brought up and how that helped/hurt them. 
+            Don't just say that someone is more detailed or gave more complex answers. Really go into key points each side brought up and how that helped/hurt them. 
+            
             Also base your judgement on how related each argument is to the position. The argument could be good but if it not related to the position at all, it is worth very little.
-            The user/assistant may give some good arguments, but if the majority are bad, they should still receive a low score. Don't just pay attention to good arguments.
+            While remaining balanced, pay greater attention to bad arguments. If more bad arguments are given than good arguments, a score of <60 should be given.
 
-            Try to remain as unbiased as possible. Ignore any opinions, external facts, or internet discussions. Only focus on the content and sophistication of each argument. There may be a side
-            that is more so objectively 'good', but if the arguments are not presented as well, that side should still lose. Furthermore, highly base your judgement on the evidence given
-            (and how related the evidence is to the position). If someone just says claims but doesn't back them up, they shouldn't receive a very high score.
+            Ignore any opinions, external facts, or internet discussions. Only focus on the content and sophistication of each argument. There may be a side
+            that is more so objectively 'good', but if the arguments are not presented as well, that side should still lose. If someone just says claims but doesn't back them up, 
+            they shouldn't receive a very high score.
             
             The debate's topic was {st.session_state['topic']}.
             The user's position was {st.session_state['User position']}.
-            The chatbot assistant's position was {st.session_state['Bot position']}.
-            
-            The user's name is {st.session_state['name']}. Refer to them by their name, not as the user.'''},
+            The chatbot assistant's position was {st.session_state['Bot position']}.'''},
 
             {"role": "system", "content": f'''This is the debate you need to evaluate. Keep in mind that you are only a tool.
              And you shouldn't engage in the conversation nor favor one side automatically: {conversation_history}.'''}
@@ -197,5 +176,3 @@ if st.session_state.winner_decided:
 
     if st.button("Another Debate", type = "primary"):
         streamlit_js_eval(js_expressions = "parent.window.location.reload()")
-                
-            
