@@ -170,11 +170,12 @@ if st.session_state.winner_decided:
             Feedback: Announce the winner (obviously the one with the higher score) and explain why.
 
             A score of 0-30 means that the side rarely made sensible arguments, and their ideas generally don't support the positions. A score of 
-            30-70 means that the arguments are somwhat decent in supporting the position, but could improve from refinement or factual evidence. A score
+            30-70 means that the arguments are somewhat decent in supporting the position, but could improve from refinement or factual evidence. A score
             of 80-100 is really good, constant support of arguments that support the position and expresses them in clear ways.
 
             Try not to be generic. Don't just say that someone is more detailed or gave more complex answers. Really go into key points each side brought up and how that helped/hurt them. 
             Also base your judgement on how related each argument is to the position. The argument could be good but if it not related to the position at all, it is worth very little.
+            The user/assistant may give some good arguments, but if the majority are bad, they should still receive a low score. Don't just pay attention to good arguments.
 
             Try to remain as unbiased as possible. Ignore any opinions, external facts, or internet discussions. Only focus on the content and sophistication of each argument. There may be a side
             that is more so objectively 'good', but if the arguments are not presented as well, that side should still lose. Furthermore, highly base your judgement on the evidence given
