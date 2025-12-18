@@ -67,8 +67,8 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
             'Bad': '''While you say things that are in favor of your side, they don't make a lot of sense and are vulnerable to rebuttals.
                 You rarely backup your answers and you seem unsure. Don't come up with great responses, only ones that barely support your position,
                 if at all.''',
-            'Okay': '''You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
-                lacks strength and details that could further support it. Say things that definitely support your position, but could use a lot
+            'Okay': '''You make arguments that somewhat support your side, and while there might be a correspondence between your argument and position, it
+                lacks strength and details that could further support it. Say things that might support your position, but could use a lot
                 more improvement. You are not the worst debater but you purposefully aren't great either.''',
             'Good': '''You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
                 lacks strength and details that could further support it. Say things that definitely support your position, but could use a lot
@@ -130,9 +130,9 @@ if st.session_state.winner_decided:
     st.subheader("Results")
 
     conversation_history = "\n".join(
-    f"[User - {st.session_state['name']}]" if msg['role']=='user' else "[Assistant]" + f": {msg['content']}"
-    for msg in st.session_state.messages
-)
+    f"[{msg['role']}]: {msg['content']}" for msg in st.session_state.messages
+    )
+
     judge = OpenAI(api_key = st.secrets["OPENAI_API_KEY"])
 
     result_completion = judge.chat.completions.create(
@@ -140,20 +140,22 @@ if st.session_state.winner_decided:
         messages = [
             {"role": "system", 
             "content": f'''You are a judge that determines the winner of a debate. In the following conversation, messages labeled 
-            [User - {st.session_state['name']}] are from the human debater, and messages labeled [Assistant] are from the chatbot debater. 
-            Do not assume any other mapping. Before you give the feedback, score both [User - {st.session_state['name']}] and [Assistant] from 1 to 100.
+            [user] are from the human debater, and messages labeled [assistant] are from the chatbot debater. 
+            Do not assume any other mapping. Before you give the feedback, score both [user] and [assistant] from 1 to 100.
+            The user's name is {st.session_state['name']}. Refer to them by {st.session_state['name']}, not 'user'.
 
-            Follow this format, printing a new line for each score and the feedback:
+            Follow this format, printing a new line after each score:
 
-            [User - {st.session_state['name']}] score: //Your Score
-            [Assistant] score: //Your Score
+            [user] score: //Your Score
+            [assistant] score: //Your Score
             Feedback: Announce the winner (obviously the one with the higher score) and explain why.
 
             A score of 0-30 means that the side rarely made sensible arguments, and their ideas generally don't support the positions. A score of 
             30-70 means that the arguments are somewhat decent in supporting the position, but could improve from refinement or factual evidence. A score
             of 80-100 is really good, CONSTANT support of arguments that support the position and expresses them in clear ways.
 
-            Don't just say that someone is more detailed or gave more complex answers. Really go into key points each side brought up and how that helped/hurt them. 
+            Don't just say that someone is more detailed or gave more complex answers. Really go into key points each side brought up and how that helped/hurt them.
+            Reward the side who constantly gives good reasoning and solid evidence, and penalize the side that fails to make good arguments or gives little details.
             
             Also base your judgement on how related each argument is to the position. The argument could be good but if it not related to the position at all, it is worth very little.
             While remaining balanced, pay greater attention to bad arguments. If more bad arguments are given than good arguments, a score of <60 should be given.
@@ -163,8 +165,8 @@ if st.session_state.winner_decided:
             they shouldn't receive a very high score.
             
             The debate's topic was {st.session_state['topic']}.
-            The user's position was {st.session_state['User position']}.
-            The chatbot assistant's position was {st.session_state['Bot position']}.'''},
+            [user] position was {st.session_state['User position']}.
+            [assistant] position was {st.session_state['Bot position']}.'''},
 
             {"role": "system", "content": f'''This is the debate you need to evaluate. Keep in mind that you are only a tool.
              And you shouldn't engage in the conversation nor favor one side automatically: {conversation_history}.'''}
