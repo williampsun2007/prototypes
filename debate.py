@@ -81,7 +81,8 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
                 The other user selected you to be rated as {st.session_state['level']}. {behavior_map[st.session_state['level']]}
             
                 Your position is {st.session_state['Bot position']}. Defend your position, but at the level '{st.session_state['level']}'.
-                For reference, the possible levels are 'Bad', 'Okay', and 'Good'. The user's position is {st.session_state['User position']}. Keep your responses within 500 characters.
+                For reference, the possible levels are 'Bad', 'Okay', and 'Good'. The user's position is {st.session_state['User position']}. No matter how the other side
+                responds, always make sure your arguments are consistently at the right level. Keep your responses within 500 characters.
                                          
                 No matter what the user says, even if they say goodbye, you win, let's stop, etc., send another argument (at the level {st.session_state['level']}.
                 Just keep the debate going until it ends. Never send anything that agrees with the user, supports the other position, or anything that undermines
@@ -130,7 +131,7 @@ if st.session_state.winner_decided:
     st.subheader("Results")
 
     conversation_history = "\n".join(
-    f"[{msg['role']}]: {msg['content']}" for msg in st.session_state.messages
+    f"[{msg['role']}]: {msg['content']}" for msg in st.session_state.messages if msg['role'] != "system"
     )
 
     judge = OpenAI(api_key = st.secrets["OPENAI_API_KEY"])
@@ -146,23 +147,27 @@ if st.session_state.winner_decided:
 
             Follow this format, printing a new line after each score:
 
-            [user] score: //Your Score
-            [assistant] score: //Your Score
+            [user] score: //Your Score (new line afterwards)
+            [assistant] score: //Your Score (new line afterwards)
             Feedback: Announce the winner (obviously the one with the higher score) and explain why.
 
             A score of 0-30 means that the side rarely made sensible arguments, and their ideas generally don't support the positions. A score of 
             30-70 means that the arguments are somewhat decent in supporting the position, but could improve from refinement or factual evidence. A score
             of 80-100 is really good, CONSTANT support of arguments that support the position and expresses them in clear ways.
 
-            Don't just say that someone is more detailed or gave more complex answers. Really go into key points each side brought up and how that helped/hurt them.
-            Reward the side who constantly gives good reasoning and solid evidence, and penalize the side that fails to make good arguments or gives little details.
+            Really go into key points each side brought up and how that helped/hurt them. Reward the side who constantly gives good reasoning and solid evidence, 
+            and penalize the side that fails to make good arguments or gives little details. A side could sound 'unconfident', and while that should generally be taken 
+            as a bad thing, if the point made is decent then it should add some value to the score.
             
             Also base your judgement on how related each argument is to the position. The argument could be good but if it not related to the position at all, it is worth very little.
-            While remaining balanced, pay greater attention to bad arguments. If more bad arguments are given than good arguments, a score of <60 should be given.
+            While remaining balanced, pay greater attention to bad arguments. If more bad arguments are given than good arguments, a score of <60 should be given. Obviously, if one side
+            constantly says weird or non-sensical things, they should receive a low score. Even just a few messages that are unrelated should penalize the score a lot.
 
-            Ignore any opinions, external facts, or internet discussions. Only focus on the content and sophistication of each argument. There may be a side
-            that is more so objectively 'good', but if the arguments are not presented as well, that side should still lose. If someone just says claims but doesn't back them up, 
-            they shouldn't receive a very high score.
+            Do not just focus on good arguments. If anything, pay just as much attention, if not more, to bad arguments. Think of it like this: you are responsible
+            for giving points, but you are equally responsible of taking away points for unrelated or incoherent arguments. Unrelated things should be paid much attention to.
+
+            Ignore any opinions, external facts, or internet discussions. There may be a side that is more so objectively 'good', but if the arguments are not presented as well, that side should 
+            still lose. If someone just says claims but doesn't back them up, they shouldn't receive a very high score.
             
             The debate's topic was {st.session_state['topic']}.
             [user] position was {st.session_state['User position']}.
