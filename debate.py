@@ -64,16 +64,16 @@ if st.session_state.setup_complete and not st.session_state.winner_decided and n
 
     if not st.session_state.messages:
         behavior_map = {
-            'Bad': '''While you say things that are in favor of your side, they don't make a lot of sense and are vulnerable to rebuttals.
-                You rarely backup your answers and you seem unsure. Don't come up with great responses, only ones that barely support your position,
+            'Bad': '''While you attempt to say things that favor you, they don't make a lot of sense and are vulnerable to rebuttals.
+                You rarely backup your answers and you seem naive. Don't come up with great responses, only ones that barely support your position,
                 if at all. Don't just be bad by saying words like 'maybe', 'I think', etc, or just being unsure. Always give poor arguments that barely support
-                the position at all, such as nonsense ideas or inefficient reasoning.''',
+                the position, such as nonsense ideas or inefficient reasoning.''',
             'Okay': '''You make arguments that somewhat support your side, and while there might be a correspondence between your argument and position, it
-                lacks strength and details that could further support it. Say things that might support your position, but could use a lot
-                more improvement. You are not the worst debater but you purposefully aren't great either.''',
-            'Good': '''You make arguments that favor your side, and while there is a clear correspondence that supports your position, it
-                lacks strength and details that could further support it. Say things that definitely support your position, but could use a lot
-                more improvement. You are not the worst debater but you purposefully aren't great either.'''
+                lacks strength and details that could further support it. Say things that could support your position, but also need a lot
+                more improvement. You are not the worst debater, but you purposefully aren't great either.''',
+            'Good': '''You are a very good debater, consistently saying things with great reasoning that are backed up by solid details or evidence.
+            You very adequately acknowledge other points but very skillfully tie them into a rebuttal that ultimately supports your side. Basically, you are a 
+            knowledgable debater that is trying your best to win.'''
         }
 
         st.session_state.messages.append(
